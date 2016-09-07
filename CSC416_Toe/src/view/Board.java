@@ -13,6 +13,9 @@ import java.util.Queue;
 
 import javax.swing.JPanel;
 
+import model.Move;
+import model.MoveGrid;
+
 public class Board extends JPanel implements ComponentListener{
 	//Size constraints
 	private int exteriorPadding = 5;
@@ -26,28 +29,9 @@ public class Board extends JPanel implements ComponentListener{
 	private int height = 0, width = 0;
 	private boolean repaintAll = true;
 	private boolean paintMove = false;
-	private int clickedXIndex = 0, clickedYIndex = 0;
 	private int cellWidth = 0, cellHeight = 0;
-	
-	//Moves
-	private List<Move> moveList = new LinkedList<>();
-	private class Move{
-		private int xIndex = 0, yIndex = 0;
-		boolean isX = true;
-		
-		public Move(int x, int y){
-			xIndex = x; 
-			yIndex = y;
-		}
-		
-		public int getX(){
-			return xIndex;
-		}
-		
-		public int getY(){
-			return yIndex;
-		}
-	}
+	//Move image data
+	private MoveGrid moves = null;
 	
 	public Board(int rows, int columns){
 		this.rows = rows;
@@ -55,7 +39,6 @@ public class Board extends JPanel implements ComponentListener{
 		size = new Dimension(gridScaling*columns + 2*exteriorPadding, gridScaling*rows + 2*exteriorPadding);
 		setPreferredSize(size);
 		addComponentListener(this);
-		addMouseListeners();
 		setSizeConstraints();
 	}
 	
@@ -63,26 +46,24 @@ public class Board extends JPanel implements ComponentListener{
 	public void paintComponent(Graphics g){
 		//Redraw grid
 		if(repaintAll){	
-			int yoffset = cellHeight;
-			int xoffset = cellWidth;
+			int yoffset = minCoord + cellHeight;
+			int xoffset = minCoord + cellWidth;
 			for(int i = 0; i < rows; i++){
 				g.drawLine(minCoord, yoffset, maxX, yoffset);	//Draw horizontal lines
 				g.drawLine(xoffset, minCoord, xoffset, maxY);	//Draw vertical lines
-				yoffset = cellHeight*(i+1);
-				xoffset = cellWidth*(i+1);
+				yoffset = minCoord + cellHeight*(i+1);
+				xoffset = minCoord + cellWidth*(i+1);
 				g.setColor(Color.BLUE);
 				g.drawRect(minCoord, minCoord, width, height);
 				g.setColor(Color.BLACK);
 			}
-			for(Move move : moveList){				//TODO: note that if we somehow have paintMove = true, this will cause problems in a second
-				clickedXIndex = move.getX();
-				clickedYIndex = move.getY();
-				paintMove(g);
+			for(Move move : moves.getMoves()){				//TODO: note that if we somehow have paintMove = true, this will cause problems in a second
+				paintMove(g, move);
 			}
 		}
-		//Paint x in a cell
+		//Paint latest move
 		if(paintMove){
-			paintMove(g);
+			paintMove(g, moves.getLatestMove());
 		}
 
 		//Default behavior 
@@ -90,13 +71,25 @@ public class Board extends JPanel implements ComponentListener{
 		paintMove = false;
 	}
 
-	public void paintMove(Graphics g){
+	public void paintMove(Graphics g, Move move){	
 		g.setColor(Color.BLUE);
-		int baseX = clickedXIndex*cellWidth;
-		int baseY = clickedYIndex*cellHeight;
-		g.drawLine(minCoord + baseX + 5, minCoord + baseY + 5, baseX + cellWidth - 5, baseY + cellHeight - 5);
-		g.drawLine(minCoord + baseX + 5, baseY + cellHeight - 5, baseX + cellWidth - 5,  minCoord + baseY + 5);
+		int baseX = minCoord + move.getX()*cellWidth;
+		int baseY = minCoord + move.getY()*cellHeight;
+		if(move.getIsX()){
+			g.drawLine(baseX, baseY, baseX + cellWidth, baseY + cellHeight);
+			g.drawLine(baseX, baseY + cellHeight, baseX + cellWidth, baseY);
+		}
+		else{
+			g.drawOval(baseX, baseY, cellWidth, cellHeight);
+		}
+		
 	}
+	
+	//SETTERS/GETTERS----------------------------------------------------------------------------------------
+	public void setMoveHistory(MoveGrid grid){
+		moves = grid;
+	}
+	
 	
 	public void setSizeConstraints(){
 		maxY = getHeight() - exteriorPadding;
@@ -107,50 +100,41 @@ public class Board extends JPanel implements ComponentListener{
 		cellWidth = width/columns;
 	}
 	
-	public void setClickedRow(int x){
-		if(x > width/3 + minCoord){
-			if(x > 2*width/3 + minCoord){
-				clickedXIndex = 2;
+	public int getClickedYIndex(int y){
+		if(y > height/3 + minCoord){
+			if(y > 2*height/3 + minCoord){
+				return 2;
 			}
 			else{
-				clickedXIndex = 1;
+				return 1;
 			}
 		}
 		else{
-			clickedXIndex = 0;
+			return 0;
 		}
 	}
 	
-	public void setClickedColumn(int y){
-		if(y > height/3 + minCoord){
-			if(y > 2*height/3 + minCoord){
-				clickedYIndex = 2;
+	public int getClickedXIndex(int x){
+		if(x > width/3 + minCoord){
+			if(x > 2*width/3 + minCoord){
+				return 2;
 			}
 			else{
-				clickedYIndex = 1;
+				return 1;
 			}
 		}
 		else{
-			clickedYIndex = 0;
+			return 0;
 		}
+	}
+	
+	public void registerMove(){
+		repaintAll = false;
+		paintMove = true;
+		repaint();
 	}
 	
 	//LISTENERS----------------------------------------------------------------------------------------------------------------
-	public void addMouseListeners(){
-		this.addMouseListener(new MouseAdapter(){
-			@Override
-			public void mouseClicked(MouseEvent mouseEvent){
-				int x = mouseEvent.getX();
-				int y = mouseEvent.getY();
-				setClickedRow(x);
-				setClickedColumn(y);
-				moveList.add(new Move(clickedXIndex, clickedYIndex));
-				repaintAll = false;
-				paintMove = true;
-				repaint();
-			}	
-		});
-	}
 	
 	@Override
 	public void componentResized(ComponentEvent arg0) {

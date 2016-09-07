@@ -18,4 +18,8 @@ public class GameView extends JFrame{
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
 	}
+	
+	public JPanel getBoard(){
+		return board;
+	}
 }
