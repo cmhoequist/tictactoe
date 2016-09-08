@@ -1,20 +1,27 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import model.Move;
-import model.MoveGrid;
+import model.BoardModel;
 
 public class Board extends JPanel implements ComponentListener{
 	//Size constraints
@@ -31,7 +38,9 @@ public class Board extends JPanel implements ComponentListener{
 	private boolean paintMove = false;
 	private int cellWidth = 0, cellHeight = 0;
 	//Move image data
-	private MoveGrid moves = null;
+	private BoardModel moves = null;
+	private Cursor xCursor = null;
+	private Cursor oCursor = null;
 	
 	public Board(int rows, int columns){
 		this.rows = rows;
@@ -40,12 +49,24 @@ public class Board extends JPanel implements ComponentListener{
 		setPreferredSize(size);
 		addComponentListener(this);
 		setSizeConstraints();
+		
+		//Set cursor
+		try {
+			Image xPNG = ImageIO.read(new File("C:\\Users\\Moritz\\Desktop\\Coding\\Java\\resources\\X.png"));
+			Image oPNG = ImageIO.read(new File("C:\\Users\\Moritz\\Desktop\\Coding\\Java\\resources\\O.png"));
+			xCursor = Toolkit.getDefaultToolkit().createCustomCursor(xPNG, new Point(this.getX(), this.getY()), "xCursor");
+			oCursor = Toolkit.getDefaultToolkit().createCustomCursor(oPNG, new Point(this.getX(), this.getY()), "oCursor");
+			this.setCursor(xCursor);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Override
 	public void paintComponent(Graphics g){
 		//Redraw grid
-		if(repaintAll){	
+		if(repaintAll){	//Note that when the parent is redrawn, its children are too - gating repaintAll risks not painting this if a parent repaint triggers unexpectedly
 			int yoffset = minCoord + cellHeight;
 			int xoffset = minCoord + cellWidth;
 			for(int i = 0; i < rows; i++){
@@ -57,7 +78,7 @@ public class Board extends JPanel implements ComponentListener{
 				g.drawRect(minCoord, minCoord, width, height);
 				g.setColor(Color.BLACK);
 			}
-			for(Move move : moves.getMoves()){				//TODO: note that if we somehow have paintMove = true, this will cause problems in a second
+			for(Move move : moves.getMoves().values()){				//TODO: note that if we somehow have paintMove = true, this will cause problems in a second
 				paintMove(g, move);
 			}
 		}
@@ -86,7 +107,7 @@ public class Board extends JPanel implements ComponentListener{
 	}
 	
 	//SETTERS/GETTERS----------------------------------------------------------------------------------------
-	public void setMoveHistory(MoveGrid grid){
+	public void setMoveHistory(BoardModel grid){
 		moves = grid;
 	}
 	
@@ -129,9 +150,18 @@ public class Board extends JPanel implements ComponentListener{
 	}
 	
 	public void registerMove(){
-		repaintAll = false;
 		paintMove = true;
+		toggleCursor();
 		repaint();
+	}
+	
+	public void toggleCursor(){
+		if(moves.getIsX() && this.getCursor().getName().equals("oCursor")){
+			this.setCursor(xCursor);
+		}
+		else if(!moves.getIsX() && this.getCursor().getName().equals("xCursor")){
+			this.setCursor(oCursor);
+		}
 	}
 	
 	//LISTENERS----------------------------------------------------------------------------------------------------------------
