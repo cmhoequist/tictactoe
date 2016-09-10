@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.JMenuItem;
 
 import model.Move;
+import model.ArtificialPlayer;
 import model.BoardModel;
 import view.Board;
 import view.View;
@@ -17,11 +18,13 @@ import view.View;
 public class Controller {
 	private View view = null;
 	private BoardModel model = null;
+	private ArtificialPlayer ai = null;
 	
 	public Controller(View view, BoardModel model){
 		this.model = model;
 		this.view = view;
 		this.view.getBoard().setMoveHistory(this.model);
+		ai = new ArtificialPlayer(this.model, 1);
 		
 		addModelListeners();
 		addViewListeners();
@@ -36,8 +39,9 @@ public class Controller {
 				int xIndex = board.getClickedXIndex(mouseEvent.getX());
 				int yIndex = board.getClickedYIndex(mouseEvent.getY());
 				if(model.checkValid(xIndex, yIndex)){
-					boolean gameOver = model.registerMove(xIndex, yIndex);
+					int gameOver = model.registerMove(xIndex, yIndex);
 					view.registerMove(model.getLatestMove().getIsX(), gameOver);
+					ai.determineMove();
 				}
 			}	
 		});

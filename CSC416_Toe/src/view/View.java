@@ -49,14 +49,24 @@ public class View extends JFrame{
 		gameOver = false;
 	}
 	
-	public void registerMove(boolean isX, boolean isOver){
+	public void registerMove(boolean isX, int isOver){
+		//Catch attempted inputs after game ends
 		if(!gameOver){
 			board.registerMove();
 			//If we're still playing, we need to pick the opposite indicated by isX - registerMove is called on the model first, which
 			//has toggled to the next turn before we've displayed this turn in the view. If we're winning, we don't want to iterate turns.
-			String text = !isX ? isOver ? oStr + winning : xStr + playing : isOver ? xStr + winning : oStr + playing;
-			turnLabel.setText(text);
-			gameOver = isOver;
+			if(isOver < 0){
+				turnLabel.setText(!isX ? (xStr + playing) : (oStr + playing));
+			}
+			else{
+				gameOver = true;
+				if(isOver > 0){
+					turnLabel.setText(!isX ? (oStr + winning) : (xStr + winning));
+				}
+				else{
+					turnLabel.setText("Game ends in TIE");
+				}
+			}			
 		}
 	}
 	

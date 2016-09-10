@@ -1,8 +1,6 @@
 package model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class BoardModel {
@@ -14,17 +12,19 @@ public class BoardModel {
 	boolean isX = true;
 	
 	public BoardModel(){
-		//Initialize sums
 		initialize();
 	}
 	
-	public boolean checkWin(){
+	public int checkWin(){
 		for(int i = 0; i < 3; i++){
 			if(Math.abs(rowSums[i]) > 2 || Math.abs(colSums[i]) > 2 || (i < 2 && Math.abs(diSums[i]) > 2)){
-				return true;
+				return 1;
 			}
 		}
-		return false;
+		if(moveMap.size() < 9){
+			return -1;
+		}
+		return 0;
 	}
 	
 	public boolean checkValid(int xIndex, int yIndex){
@@ -34,7 +34,7 @@ public class BoardModel {
 		return true;
 	}
 	
-	public boolean registerMove(int xIndex, int yIndex){
+	public int registerMove(int xIndex, int yIndex){
 		latest = xIndex*3 + yIndex;
 		moveMap.put(latest, new Move(xIndex, yIndex, isX));
 		
@@ -53,11 +53,8 @@ public class BoardModel {
 			diSums[1] += val;
 		}
 		
-		//Check whether the game has ended in victory or in a tie
-		if(moveMap.size() < 9){
-			return checkWin();
-		}
-		return true;
+		//Check the game state (win, ongoing, tie)
+		return checkWin();
 	}
 	
 	public void initialize(){
@@ -72,6 +69,7 @@ public class BoardModel {
 		isX = true;
 	}
 	
+	//GETTERS/SETTERS--------------------------------------------------------------------------------------------------
 	public Move getLatestMove(){
 		return moveMap.get(latest);
 	}
@@ -82,5 +80,21 @@ public class BoardModel {
 	
 	public boolean getIsX(){
 		return isX;
+	}
+
+	public int[] getRowSums(){
+		return rowSums;
+	}
+	
+	public int[] getColSums(){
+		return colSums;
+	}
+	
+	public int[] getDiSums(){
+		return diSums;
+	}
+	
+	public Move getElement(int gridIndex){
+		return moveMap.get(gridIndex);
 	}
 }
