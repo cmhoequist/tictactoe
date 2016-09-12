@@ -39,10 +39,13 @@ public class Controller {
 				int xIndex = board.getClickedXIndex(mouseEvent.getX());
 				int yIndex = board.getClickedYIndex(mouseEvent.getY());
 				if(model.checkValid(xIndex, yIndex)){
-					System.out.println("x,y: " + xIndex + ", " + yIndex);
 					int gameOver = model.registerMove(xIndex, yIndex);
 					view.registerMove(model.getLatestMove().getIsX(), gameOver);
-					ai.determineMove();
+					if(!model.getIsX() && gameOver == -1){
+						ai.determineMove();
+						int counterMove = model.registerMove(ai.determineMove());
+						view.registerMove(model.getLatestMove().getIsX(), counterMove);
+					}
 				}
 			}	
 		});
@@ -55,6 +58,7 @@ public class Controller {
 			public void actionPerformed(ActionEvent arg0) {
 				model.initialize();
 				view.initialize();
+				ai.initialize();
 			}
 		});
 	}

@@ -14,8 +14,13 @@ public class ArtificialPlayer {
 		this.polarity = polarity;
 	}
 	
+	public void initialize(){
+		winningMove = -1;
+		losingMove = -1;
+	}
+	
 	public int determineMove(){
-		willWin();
+		checkWinConditions();
 		if(winningMove < 0){
 			if(losingMove < 0){
 				for(int i = 0; i < 9; i++){	
@@ -33,7 +38,7 @@ public class ArtificialPlayer {
 		return winningMove;
 	}
 	
-	public boolean willWin(){
+	public boolean checkWinConditions(){
 		for(int i = 0; i < 3; i++){
 			int rowSum = model.getRowSums()[i];
 			int colSum = model.getColSums()[i];
@@ -42,11 +47,9 @@ public class ArtificialPlayer {
 				diSum = model.getDiSums()[i];
 			}
 			if(Math.abs(rowSum) == 2){
-				int move = 0;
 				for(int j = 0; j < 3; j++){
 					if(model.getElement(i*3 + j) == null){
-						move = i*3+j;
-						if(willWinHelper(rowSum, move)){	//Only return if it's a win; otherwise keep looking
+						if(setCalculatedMove(rowSum, i*3+j)){	//Only return if it's a win; otherwise keep looking
 							return true;
 						}
 						break;
@@ -54,11 +57,9 @@ public class ArtificialPlayer {
 				}
 			}
 			if(Math.abs(colSum) == 2){
-				int move = -1;
 				for(int j = 0; j < 3; j++){
-					if(model.getElement(j*3 + i) == null){
-						move = j*3+i;
-						if(willWinHelper(colSum, move)){
+					if(model.checkValid(j*3 + i)){
+						if(setCalculatedMove(colSum, j*3+i)){
 							return true;
 						}
 						break;
@@ -66,12 +67,10 @@ public class ArtificialPlayer {
 				}
 			}
 			if(Math.abs(diSum) == 2){
-				int move = -1;
 				if(i==0){									//Check descending diagonal
 					for(int j = 0; j < 3; j++){
 						if(model.getElement(j*3 + j) == null){
-							move = j*3+j;
-							if(willWinHelper(diSum, move)){
+							if(setCalculatedMove(diSum, j*3+j)){
 								return true;
 							}
 							break;
@@ -81,8 +80,7 @@ public class ArtificialPlayer {
 				else{										//Check ascending diagonal
 					for(int j = 0; j < 3; j++){
 						if(model.getElement((j+1)*2) == null){
-							move = (j+1)*2;
-							if(willWinHelper(diSum, move)){
+							if(setCalculatedMove(diSum, (j+1)*2)){
 								return true;
 							}
 							break;
@@ -96,7 +94,7 @@ public class ArtificialPlayer {
 	}
 	
 	
-	private boolean willWinHelper(int sum, int move){
+	private boolean setCalculatedMove(int sum, int move){
 		boolean wins = false;
 		if(sum < 0 && polarity < 0 || sum > 0 && polarity > 0){
 			winningMove = move;
@@ -106,7 +104,6 @@ public class ArtificialPlayer {
 			losingMove = move;
 		}
 		validateCalculatedMoves();
-		System.out.println((sum < 0 && polarity < 0 ? "X: " : "O: ") + "w,l: " + winningMove + ", " + losingMove);
 		return wins;
 	}
 	

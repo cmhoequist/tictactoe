@@ -18,13 +18,13 @@ public class BoardModel {
 	public int checkWin(){
 		for(int i = 0; i < 3; i++){
 			if(Math.abs(rowSums[i]) > 2 || Math.abs(colSums[i]) > 2 || (i < 2 && Math.abs(diSums[i]) > 2)){
-				return 1;
+				return 1; //there's a winner
 			}
 		}
 		if(moveMap.size() < 9){
-			return -1;
+			return -1; //the game is ongoing
 		}
-		return 0;
+		return 0;  //there's a tie
 	}
 	
 	public boolean checkValid(int cellIndex){
@@ -41,9 +41,14 @@ public class BoardModel {
 		return true;
 	}
 	
+	public int registerMove(int cellIndex){
+		int yIndex = cellIndex/3;
+		int xIndex = cellIndex%3;
+		return registerMove(xIndex, yIndex);
+	}
+	
 	public int registerMove(int xIndex, int yIndex){
 		latest = yIndex*3 + xIndex;									//remember INDEX vs ROW/COL
-		System.out.println("Register " + latest);
 		moveMap.put(latest, new Move(xIndex, yIndex, isX));
 		
 		isX = !isX;
