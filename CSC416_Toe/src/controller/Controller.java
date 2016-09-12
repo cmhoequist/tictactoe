@@ -24,7 +24,7 @@ public class Controller {
 		this.model = model;
 		this.view = view;
 		this.view.getBoard().setMoveHistory(this.model);
-		ai = new ArtificialPlayer(this.model, 1);
+		ai = new ArtificialPlayer(this.model, 1);	//initialized to circle
 		
 		addModelListeners();
 		addViewListeners();
@@ -39,6 +39,7 @@ public class Controller {
 				int xIndex = board.getClickedXIndex(mouseEvent.getX());
 				int yIndex = board.getClickedYIndex(mouseEvent.getY());
 				if(model.checkValid(xIndex, yIndex)){
+					System.out.println("x,y: " + xIndex + ", " + yIndex);
 					int gameOver = model.registerMove(xIndex, yIndex);
 					view.registerMove(model.getLatestMove().getIsX(), gameOver);
 					ai.determineMove();

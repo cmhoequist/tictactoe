@@ -27,15 +27,23 @@ public class BoardModel {
 		return 0;
 	}
 	
+	public boolean checkValid(int cellIndex){
+		if(moveMap.get(cellIndex) != null){
+			return false;
+		}
+		return true;
+	}
+	
 	public boolean checkValid(int xIndex, int yIndex){
-		if(moveMap.get(xIndex*3 + yIndex) != null){
+		if(moveMap.get(yIndex*3 + xIndex) != null){
 			return false;
 		}
 		return true;
 	}
 	
 	public int registerMove(int xIndex, int yIndex){
-		latest = xIndex*3 + yIndex;
+		latest = yIndex*3 + xIndex;									//remember INDEX vs ROW/COL
+		System.out.println("Register " + latest);
 		moveMap.put(latest, new Move(xIndex, yIndex, isX));
 		
 		isX = !isX;

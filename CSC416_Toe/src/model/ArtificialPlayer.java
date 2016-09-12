@@ -15,10 +15,7 @@ public class ArtificialPlayer {
 	}
 	
 	public int determineMove(){
-		if(willWin()){
-			System.out.println("w,l: " + winningMove + ", " + losingMove);
-		}
-		
+		willWin();
 		//TODO: algorithm
 		return 0;
 	}
@@ -27,66 +24,70 @@ public class ArtificialPlayer {
 		for(int i = 0; i < 3; i++){
 			int rowSum = model.getRowSums()[i];
 			int colSum = model.getColSums()[i];
-			int diSum = -1;
+			int diSum = 0;
 			if(i < 2){
 				diSum = model.getDiSums()[i];
 			}
-			System.out.println("SUMS: " + rowSum + ", " + colSum + ", " + diSum);
 			if(Math.abs(rowSum) == 2){
 				int move = 0;
 				for(int j = 0; j < 3; j++){
 					if(model.getElement(i*3 + j) == null){
 						move = i*3+j;
+						return willWinHelper(rowSum, move);
 					}
 				}
-				if(rowSum < 0 && polarity < 0 || rowSum > 0 && polarity > 0){
-					winningMove = move;
-				}
-				else{
-					losingMove = move;
-				}
-				return true;
 			}
 			else if(Math.abs(colSum) == 2){
 				int move = -1;
 				for(int j = 0; j < 3; j++){
 					if(model.getElement(j*3 + i) == null){
 						move = j*3+i;
+						return willWinHelper(colSum, move);
 					}
 				}
-				if(colSum < 0 && polarity < 0 || colSum > 0 && polarity > 0){
-					winningMove = move;
-				}
-				else{
-					losingMove = move;
-				}
-				return true;
 			}
 			else if(Math.abs(diSum) == 2){
 				int move = -1;
-				if(i==0){
+				if(i==0){									//Check descending diagonal
 					for(int j = 0; j < 3; j++){
 						if(model.getElement(j*3 + j) == null){
 							move = j*3+j;
+							return willWinHelper(diSum, move);
 						}
 					}
 				}
-				else{
+				else{										//Check ascending diagonal
 					for(int j = 0; j < 3; j++){
 						if(model.getElement((j+1)*2) == null){
 							move = (j+1)*2;
+							return willWinHelper(diSum, move);
 						}
 					}
 				}
-				if(diSum < 0 && polarity < 0 || diSum > 0 && polarity > 0){
-					winningMove = move;
-				}
-				else{
-					losingMove = move;
-				}
-				return true;
 			}
 		}
 		return false;
+	}
+	
+	
+	private boolean willWinHelper(int sum, int move){
+		if(sum < 0 && polarity < 0 || sum > 0 && polarity > 0){
+			winningMove = move;
+		}
+		else{
+			losingMove = move;
+		}
+		if(model.getElement(move)==null){
+			
+		}
+		
+		if(!model.checkValid(winningMove)){
+			winningMove = -1;
+		}
+		if(!model.checkValid(losingMove)){
+			losingMove = -1;
+		}
+		System.out.println((sum < 0 && polarity < 0 ? "X: " : "O: ") + "w,l: " + winningMove + ", " + losingMove);
+		return true;
 	}
 }
