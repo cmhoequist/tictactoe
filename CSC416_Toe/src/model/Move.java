@@ -21,4 +21,8 @@ public class Move {
 	public boolean getIsX(){
 		return isX;
 	}
+	
+	public int getIndex(){
+		return yIndex*3 + xIndex;
+	}
 }

@@ -10,20 +10,27 @@ public class BoardModel {
 	int[] colSums = new int[3];
 	int[] diSums = new int[2];
 	boolean isX = true;
+	boolean isOver = false;
 	
 	public BoardModel(){
 		initialize();
 	}
 	
+	/**
+	 * Returns 1 if there is a victor, 0 if there is a tie, or -1 if the game is ongoing
+	 * @return
+	 */
 	public int checkWin(){
 		for(int i = 0; i < 3; i++){
 			if(Math.abs(rowSums[i]) > 2 || Math.abs(colSums[i]) > 2 || (i < 2 && Math.abs(diSums[i]) > 2)){
+				isOver = true;
 				return 1; //there's a winner
 			}
 		}
 		if(moveMap.size() < 9){
 			return -1; //the game is ongoing
 		}
+		isOver = true;
 		return 0;  //there's a tie
 	}
 	
@@ -35,10 +42,7 @@ public class BoardModel {
 	}
 	
 	public boolean checkValid(int xIndex, int yIndex){
-		if(moveMap.get(yIndex*3 + xIndex) != null){
-			return false;
-		}
-		return true;
+		return checkValid(yIndex*3 + xIndex);
 	}
 	
 	public int registerMove(int cellIndex){
@@ -80,6 +84,7 @@ public class BoardModel {
 		}
 		moveMap.clear();
 		isX = true;
+		isOver = false;
 	}
 	
 	//GETTERS/SETTERS--------------------------------------------------------------------------------------------------
@@ -87,10 +92,18 @@ public class BoardModel {
 		return moveMap.get(latest);
 	}
 	
+	public boolean getIsOver(){
+		return isOver;
+	}
+	
 	public Map<Integer, Move> getMoves(){
 		return moveMap;
 	}
 	
+	/**
+	 * Every time you register move, isX toggles to the next turn
+	 * @return
+	 */
 	public boolean getIsX(){
 		return isX;
 	}

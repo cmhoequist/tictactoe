@@ -25,16 +25,13 @@ public class ArtificialPlayer {
 			if(losingMove < 0){
 				for(int i = 0; i < 9; i++){	
 					if(model.checkValid(i)){
-						System.out.println("MOVE (nonterminating): " + i);
 						return i;
 					}
 				}
 				return -1; //if there are no valid moves and we're still asked to determine move, an error has occurred
 			}
-			System.out.println("MOVE:" + losingMove);	
 			return losingMove;
 		}
-		System.out.println("MOVE:" + winningMove);
 		return winningMove;
 	}
 	
@@ -49,7 +46,7 @@ public class ArtificialPlayer {
 			if(Math.abs(rowSum) == 2){
 				for(int j = 0; j < 3; j++){
 					if(model.getElement(i*3 + j) == null){
-						if(setCalculatedMove(rowSum, i*3+j)){	//Only return if it's a win; otherwise keep looking
+						if(setCalculatedMove(rowSum, i*3+j)){	//Only return if it's a win; otherwise keep looking. (Prioritize wins over losses).
 							return true;
 						}
 						break;
@@ -94,6 +91,12 @@ public class ArtificialPlayer {
 	}
 	
 	
+	/**
+	 * Returns true if the move is winning, false if it losing.
+	 * @param sum
+	 * @param move
+	 * @return
+	 */
 	private boolean setCalculatedMove(int sum, int move){
 		boolean wins = false;
 		if(sum < 0 && polarity < 0 || sum > 0 && polarity > 0){
@@ -107,6 +110,10 @@ public class ArtificialPlayer {
 		return wins;
 	}
 	
+	/**
+	 * winningMove or losingMove may become invalid as players continue to 
+	 * populate the board. This function checks for validity and updates the stored moves.
+	 */
 	private void validateCalculatedMoves(){
 		if(!model.checkValid(winningMove)){
 			winningMove = -1;

@@ -35,20 +35,34 @@ public class Controller {
 		board.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent mouseEvent){
-				//Draw move
+				//Get move location move
 				int xIndex = board.getClickedXIndex(mouseEvent.getX());
 				int yIndex = board.getClickedYIndex(mouseEvent.getY());
-				if(model.checkValid(xIndex, yIndex)){
-					int gameOver = model.registerMove(xIndex, yIndex);
+				
+				//Ignore if invalid
+				if(model.checkValid(xIndex, yIndex) && !model.getIsOver()){
+					//Update model and get game state
+					int gameOver = model.registerMove(xIndex, yIndex);	//x is true, o is false
+					
+					//Propagate model change to view
 					view.registerMove(model.getLatestMove().getIsX(), gameOver);
-					if(!model.getIsX() && gameOver == -1){
-						ai.determineMove();
-						int counterMove = model.registerMove(ai.determineMove());
-						view.registerMove(model.getLatestMove().getIsX(), counterMove);
+					view.displayGameState(model.getLatestMove().getIsX(), gameOver);	
+					
+					//If not over, countermove
+					if(gameOver == -1){
+						makeAImove();
 					}
 				}
 			}	
 		});
+	}
+	
+	public void makeAImove(){
+		view.setCursorToO();
+		ai.determineMove();
+		int gameOver = model.registerMove(ai.determineMove());
+		view.registerMove(model.getLatestMove().getIsX(), gameOver);
+		view.executeWorker(gameOver);
 	}
 	
 	public void addViewListeners(){

@@ -14,6 +14,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Arc2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -22,6 +23,7 @@ import java.util.Queue;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 import model.Move;
 import model.BoardModel;
@@ -38,24 +40,25 @@ public class Board extends JPanel implements ComponentListener{
 	private int minCoord = 5;
 	private int maxY = 0, maxX = 0;
 	private int height = 0, width = 0;
-	private boolean repaintAll = true;
-	private boolean paintMove = false;
 	private int cellWidth = 0, cellHeight = 0;
-	private Color xColor = new Color(0, 128, 255);
-	private Color oColor = new Color(255, 128, 0);
+	private Color xColor = null;
+	private Color oColor = null;
+	private int arcExtent = 0;
 	
 	//Move image data
 	private BoardModel moves = null;
 	private Cursor xCursor = null;
 	private Cursor oCursor = null;
 	
-	public Board(int rows, int columns){
+	public Board(int rows, int columns, Color xColor, Color oColor){
+		this.xColor = xColor;
+		this.oColor = oColor;
 		this.rows = rows;
 		this.columns = columns;
 		size = new Dimension(gridScaling*columns + 2*exteriorPadding, gridScaling*rows + 2*exteriorPadding);
 		setPreferredSize(size);
-		addComponentListener(this);
 		setSizeConstraints();
+		addComponentListener(this);
 		
 		//Set cursor
 		try {
@@ -67,7 +70,6 @@ public class Board extends JPanel implements ComponentListener{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	@Override
@@ -99,6 +101,7 @@ public class Board extends JPanel implements ComponentListener{
 		int baseX = minCoord + move.getX()*cellWidth + (cellWidth - shrinkWidth)/2;
 		int baseY = minCoord + move.getY()*cellHeight + (cellHeight - shrinkHeight)/2;
 		
+		
 		if(move.getIsX()){
 			g.setColor(xColor);
 			g.drawLine(baseX, baseY, baseX + shrinkWidth, baseY + shrinkHeight);
@@ -106,7 +109,13 @@ public class Board extends JPanel implements ComponentListener{
 		}
 		else{
 			g.setColor(oColor);
-			g.drawOval(baseX, baseY, shrinkWidth, shrinkHeight);
+			if(moves.getLatestMove().getIndex() != move.getIndex()){
+				g.drawOval(baseX, baseY, shrinkWidth, shrinkHeight);
+			}
+			else{
+				Arc2D arc = new Arc2D.Double(baseX, baseY, shrinkWidth, shrinkHeight, 0, arcExtent, Arc2D.OPEN);
+				g2d.draw(arc);	
+			}
 		}
 	}
 	
@@ -115,10 +124,13 @@ public class Board extends JPanel implements ComponentListener{
 		moves = grid;
 	}
 	
-	
 	public void setSizeConstraints(){
-		maxY = getHeight() - exteriorPadding;
-		maxX = getWidth() - exteriorPadding;
+		int h = getSize().height;
+		int w = getSize().width;
+		
+		maxY = (h < getPreferredSize().height ? getPreferredSize().height : h) - exteriorPadding;
+		maxX = (w < getPreferredSize().width ? getPreferredSize().width : w) - exteriorPadding;
+		
 		height = maxY - minCoord;
 		width = maxX - minCoord;
 		cellHeight = height/rows;
@@ -154,22 +166,23 @@ public class Board extends JPanel implements ComponentListener{
 	}
 	
 	public void registerMove(){
-		paintMove = true;
-		toggleCursor();
 		repaint();
 	}
 	
-	public void toggleCursor(){
-		if(moves.getIsX() && this.getCursor().getName().equals("oCursor")){
-			this.setCursor(xCursor);
-		}
-		else if(!moves.getIsX() && this.getCursor().getName().equals("xCursor")){
-			this.setCursor(oCursor);
-		}
+	public void setCursorToO(){
+		this.setCursor(oCursor);
+	}
+	
+	public void setCursorToX(){
+		this.setCursor(xCursor);
+	}
+	
+	public void setProgress(int value){
+		arcExtent = 360*value/100;
+		repaint();
 	}
 	
 	//LISTENERS----------------------------------------------------------------------------------------------------------------
-	
 	@Override
 	public void componentResized(ComponentEvent arg0) {
 		setSizeConstraints();
