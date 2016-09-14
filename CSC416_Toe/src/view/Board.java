@@ -31,7 +31,7 @@ import model.BoardModel;
 public class Board extends JPanel implements ComponentListener{
 	//Size constraints
 	private int exteriorPadding = 5;
-	private int gridScaling = 100;
+	private int gridScaling = 200;
 	private Dimension size = null;
 	private int rows = 0;
 	private int columns = 0;
@@ -101,7 +101,6 @@ public class Board extends JPanel implements ComponentListener{
 		int baseX = minCoord + move.getX()*cellWidth + (cellWidth - shrinkWidth)/2;
 		int baseY = minCoord + move.getY()*cellHeight + (cellHeight - shrinkHeight)/2;
 		
-		
 		if(move.getIsX()){
 			g.setColor(xColor);
 			g.drawLine(baseX, baseY, baseX + shrinkWidth, baseY + shrinkHeight);
@@ -109,10 +108,10 @@ public class Board extends JPanel implements ComponentListener{
 		}
 		else{
 			g.setColor(oColor);
-			if(moves.getLatestMove().getIndex() != move.getIndex()){
+			if(moves.getLatestMove().getIndex() != move.getIndex()){	//Draw ovals for all existing moves
 				g.drawOval(baseX, baseY, shrinkWidth, shrinkHeight);
 			}
-			else{
+			else{		//Draw an arc over time for the latest AI move
 				Arc2D arc = new Arc2D.Double(baseX, baseY, shrinkWidth, shrinkHeight, 0, arcExtent, Arc2D.OPEN);
 				g2d.draw(arc);	
 			}
@@ -128,6 +127,7 @@ public class Board extends JPanel implements ComponentListener{
 		int h = getSize().height;
 		int w = getSize().width;
 		
+		//getSize is convenient for resizing, while getPreferredSize is convenient for initialization
 		maxY = (h < getPreferredSize().height ? getPreferredSize().height : h) - exteriorPadding;
 		maxX = (w < getPreferredSize().width ? getPreferredSize().width : w) - exteriorPadding;
 		
@@ -175,6 +175,10 @@ public class Board extends JPanel implements ComponentListener{
 	
 	public void setCursorToX(){
 		this.setCursor(xCursor);
+	}
+	
+	public void toggleCursor(){
+		this.setCursor(this.getCursor()==xCursor ? oCursor : xCursor);
 	}
 	
 	public void setProgress(int value){

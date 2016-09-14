@@ -36,7 +36,7 @@ public class ArtificialPlayer {
 	}
 	
 	public boolean checkWinConditions(){
-		for(int i = 0; i < 3; i++){
+		for(int i = 0; i < 3; i++){	//i is the yIndex here: the row. j will be the xIndex (column).
 			int rowSum = model.getRowSums()[i];
 			int colSum = model.getColSums()[i];
 			int diSum = 0;

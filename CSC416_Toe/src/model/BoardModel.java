@@ -41,16 +41,6 @@ public class BoardModel {
 		return true;
 	}
 	
-	public boolean checkValid(int xIndex, int yIndex){
-		return checkValid(yIndex*3 + xIndex);
-	}
-	
-	public int registerMove(int cellIndex){
-		int yIndex = cellIndex/3;
-		int xIndex = cellIndex%3;
-		return registerMove(xIndex, yIndex);
-	}
-	
 	public int registerMove(int xIndex, int yIndex){
 		latest = yIndex*3 + xIndex;									//remember INDEX vs ROW/COL
 		moveMap.put(latest, new Move(xIndex, yIndex, isX));

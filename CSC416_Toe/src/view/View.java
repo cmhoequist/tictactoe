@@ -8,28 +8,32 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 public class View extends JFrame{
-	
+	//Critical view elements
 	private Board board = null;
 	private JProgressBar turnProgress = null;
-	private JMenuItem newGame = null;
-		private String xStr = "'X'";
-		private String oStr = "'O'";
-		private String winning = " Wins!";
-		private String playing = " Playing";
+	private JMenuItem newGameVsAi = null;
+	private JMenuItem newGameVsPlayer = null;
+	
+	//Game state descriptors
+	private String xStr = "'X'";
+	private String oStr = "'O'";
+	private String winning = " Wins!";
+	private String playing = " Playing";
+	
+	//View painting fields
 	private SwingWorker<Void, Integer> worker = null;
 	private Color xColor = new Color(0, 128, 255);
 	private Color oColor = new Color(255, 128, 0);
 	private Color defaultProgressForeground = null;
 	
-	public View(){
-		//Set up board
-		board = new Board(3,3, xColor, oColor);
-		
+	public View(){	
 		//Populate frame
 		JMenuBar menuBar = new JMenuBar();
 			JMenu menu = new JMenu("Menu");
-				newGame = new JMenuItem("New Game");
-				menu.add(newGame);
+				newGameVsAi = new JMenuItem("New Game (vs AI)");
+				newGameVsPlayer = new JMenuItem("New Game (PvP)");
+				menu.add(newGameVsAi);
+				menu.add(newGameVsPlayer);
 			menuBar.add(menu);
 		JPanel header = new JPanel();
 			header.setLayout(new BoxLayout(header,BoxLayout.LINE_AXIS));
@@ -37,7 +41,9 @@ public class View extends JFrame{
 				turnProgress.setValue(0);
 				turnProgress.setStringPainted(true);
 				turnProgress.setString(xStr + playing);
+				defaultProgressForeground = turnProgress.getForeground();
 			header.add(turnProgress);
+		board = new Board(3,3, xColor, oColor);
 			
 		setJMenuBar(menuBar);
 		getContentPane().setLayout(new BoxLayout(this.getContentPane(), BoxLayout.PAGE_AXIS));
@@ -45,18 +51,19 @@ public class View extends JFrame{
 		getContentPane().add(board);
 
 		//Finish frame
-		setTitle("Tic Tac Toe (Java Implementation)");
+		setTitle("Tic Tac Toe (Player vs AI)");
 		pack();
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
-		
-		defaultProgressForeground = turnProgress.getForeground();
 	}
 	
 	public void initialize(){
 		turnProgress.setForeground(defaultProgressForeground);
 		turnProgress.setString(xStr + playing);
+		board.setCursorToX();
+		board.setProgress(0);
+		turnProgress.setValue(100);
 		board.repaint();
 	}
 	
@@ -69,16 +76,16 @@ public class View extends JFrame{
 		return (Board)board;
 	}
 	
-	public JMenuItem getNewGame(){
-		return newGame;
+	public JMenuItem getNewGameVsAi(){
+		return newGameVsAi;
 	}
 	
-	public void setCursorToX(){
-		board.setCursorToX();
+	public JMenuItem getNewGameVsPlayer(){
+		return newGameVsPlayer;
 	}
 	
-	public void setCursorToO(){
-		board.setCursorToO();
+	public void toggleCursor(){
+		board.toggleCursor();
 	}
 	
 	public void executeWorker(int isOver){
@@ -96,9 +103,9 @@ public class View extends JFrame{
 			
 			@Override
 			protected void done(){
-				board.setCursorToX();
 				displayGameState(false, isOver);	//false: this worker always works on the circle's turn. It's never x.
 				board.setProgress(0);
+				board.toggleCursor();
 			}
 		};
 		worker.addPropertyChangeListener(new PropertyChangeListener(){
@@ -127,22 +134,19 @@ public class View extends JFrame{
 			turnProgress.setString(!isX ? (xStr + playing) : (oStr + playing));
 			return true;
 		}
+		else if(isOver == 0){
+			turnProgress.setString("Game ends in TIE");
+		}
 		else{
-			if(isOver > 0){
-				if(isX){
-					turnProgress.setString(xStr + winning);
-					turnProgress.setForeground(xColor);	
-				}
-				else{
-					turnProgress.setString(oStr + winning);
-					turnProgress.setForeground(oColor);
-				}
-				
+			if(isX){
+				turnProgress.setString(xStr + winning);
+				turnProgress.setForeground(xColor);	
 			}
 			else{
-				turnProgress.setString("Game ends in TIE");
+				turnProgress.setString(oStr + winning);
+				turnProgress.setForeground(oColor);
 			}
-			return false;
 		}
+		return false;
 	}
 }

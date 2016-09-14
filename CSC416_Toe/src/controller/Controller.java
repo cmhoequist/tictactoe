@@ -19,6 +19,7 @@ public class Controller {
 	private View view = null;
 	private BoardModel model = null;
 	private ArtificialPlayer ai = null;
+	private boolean vsAi = true;
 	
 	public Controller(View view, BoardModel model){
 		this.model = model;
@@ -40,7 +41,7 @@ public class Controller {
 				int yIndex = board.getClickedYIndex(mouseEvent.getY());
 				
 				//Ignore if invalid
-				if(model.checkValid(xIndex, yIndex) && !model.getIsOver()){
+				if(model.checkValid(yIndex*3 + xIndex) && !model.getIsOver()){
 					//Update model and get game state
 					int gameOver = model.registerMove(xIndex, yIndex);	//x is true, o is false
 					
@@ -50,7 +51,10 @@ public class Controller {
 					
 					//If not over, countermove
 					if(gameOver == -1){
-						makeAImove();
+						view.toggleCursor();	//also, don't want to toggle cursor if the game's just ended
+						if(vsAi){
+							makeAImove();
+						}
 					}
 				}
 			}	
@@ -58,21 +62,33 @@ public class Controller {
 	}
 	
 	public void makeAImove(){
-		view.setCursorToO();
 		ai.determineMove();
-		int gameOver = model.registerMove(ai.determineMove());
+		int cellIndex = ai.determineMove();
+		int gameOver = model.registerMove(cellIndex%3, cellIndex/3);
 		view.registerMove(model.getLatestMove().getIsX(), gameOver);
 		view.executeWorker(gameOver);
 	}
 	
 	public void addViewListeners(){
-		JMenuItem newGame = view.getNewGame();
-		newGame.addActionListener(new ActionListener(){
+		view.getNewGameVsAi().addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				vsAi = true;
 				model.initialize();
 				view.initialize();
+				view.setTitle("Tic Tac Toe (Player vs AI)");
 				ai.initialize();
+			}
+		});
+		view.getNewGameVsPlayer().addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e){
+				vsAi = false;
+				model.initialize();
+				view.initialize();
+				view.setTitle("Tic Tac Toe (Player vs Player)");
+				ai.initialize();
+				view.getBoard().setProgress(100); //must come after view initialization, which clears arcExtent
 			}
 		});
 	}
